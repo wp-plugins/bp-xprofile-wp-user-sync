@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------
 Plugin Name: BP XProfile WordPress User Sync
 Description: Map BuddyPress XProfile fields to WordPress User fields. <strong>Note:</strong> because there is no way to hide XProfile fields, all data associated with this plugin will be lost when it is deactivated.
-Version: 0.2
+Version: 0.3
 Author: Christian Wach
 Author URI: http://haystack.co.uk
 Plugin URI: http://haystack.co.uk
@@ -187,6 +187,9 @@ class BpXProfileWordPressUserSync {
 		add_action( 'xprofile_updated_profile', array( $this, 'intercept_wp_profile_sync' ), 9, 3 );
 		add_action( 'bp_core_signup_user', array( $this, 'intercept_wp_profile_sync' ), 9, 3 );
 		add_action( 'bp_core_activated_user', array( $this, 'intercept_wp_profile_sync' ), 9, 3 );
+		
+		// compatibility with "WP FB AutoConnect Premium"
+		add_filter( 'wpfb_xprofile_fields_received', array( $this, 'intercept_wp_fb_profile_sync' ), 10, 2 );
 		
 	}
 	
@@ -383,6 +386,45 @@ class BpXProfileWordPressUserSync {
 
 
 
+	/**
+	 * @description: compatibility with "WP FB AutoConnect Premium"
+	 * @param array $facebook_user
+	 * @return array $facebook_user
+	 */
+	public function intercept_wp_fb_profile_sync( $facebook_user, $wp_user_id ) {
+	
+		/*
+		------------------------------------------------------------------------
+		When XProfiles are updated, BuddyPress sets user nickname and display name 
+		so WP FB AutoConnect Premium should do too. To do so, alter line 1315 or so:
+
+		//A filter so 3rd party plugins can process any extra fields they might need
+		$fbuser = apply_filters('wpfb_xprofile_fields_received', $fbuser, $args['WP_ID']);
+		------------------------------------------------------------------------
+		*/
+
+		// set user nickname
+		bp_update_user_meta( $wp_user_id, 'nickname', $facebook_user['name'] );
+		
+		// access db
+		global $wpdb;
+
+		// set user display name - see xprofile_sync_wp_profile()
+		$wpdb->query( 
+			$wpdb->prepare( 
+				"UPDATE {$wpdb->users} SET display_name = %s WHERE ID = %d", 
+				$facebook_user['name'], 
+				$wp_user_id 
+			)
+		);
+		
+		// pass it on
+		return $facebook_user;
+		
+	}
+
+
+
 	//##########################################################################
 	
 	
@@ -491,6 +533,8 @@ class BpXProfileWordPressUserSync {
 
 
 
+// declare as global
+global $bp_xprofile_wordpress_user_sync;
 
 // init plugin
 $bp_xprofile_wordpress_user_sync = new BpXProfileWordPressUserSync;
