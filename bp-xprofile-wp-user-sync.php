@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------
 Plugin Name: BP XProfile WordPress User Sync
 Description: Map BuddyPress XProfile fields to WordPress User fields. <strong>Note:</strong> because there is no way to hide XProfile fields, all data associated with this plugin will be lost when it is deactivated.
-Version: 0.3
+Version: 0.4
 Author: Christian Wach
 Author URI: http://haystack.co.uk
 Plugin URI: http://haystack.co.uk
@@ -13,8 +13,21 @@ Plugin URI: http://haystack.co.uk
 
 
 // set our version here
-define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.2' );
+define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.4' );
 
+// store reference to this file
+if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_FILE' ) ) {
+	define( 'BP_XPROFILE_WP_USER_SYNC_FILE', __FILE__ );
+}
+
+// store URL to this plugin's directory
+if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_URL' ) ) {
+	define( 'BP_XPROFILE_WP_USER_SYNC_URL', plugin_dir_url( BP_XPROFILE_WP_USER_SYNC_FILE ) );
+}
+// store PATH to this plugin's directory
+if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_PATH' ) ) {
+	define( 'BP_XPROFILE_WP_USER_SYNC_PATH', plugin_dir_path( BP_XPROFILE_WP_USER_SYNC_FILE ) );
+}
 
 
 
@@ -47,6 +60,9 @@ class BpXProfileWordPressUserSync {
 		// add action for plugin init
 		add_action( 'bp_init', array( $this, 'register_hooks' ) );
 
+		// use translation
+		add_action( 'plugins_loaded', array( $this, 'translation' ) );
+		
 		// --<
 		return $this;
 
@@ -71,6 +87,36 @@ class BpXProfileWordPressUserSync {
 		// --<
 		return $this;
 
+	}
+	
+	
+	
+	/** 
+	 * @description: loads translation, if present
+	 * @todo: 
+	 *
+	 */
+	function translation() {
+		
+		// only use, if we have it...
+		if( function_exists('load_plugin_textdomain') ) {
+	
+			// not used, as there are no translations as yet
+			load_plugin_textdomain(
+			
+				// unique name
+				'bp-xprofile-wordpress-user-sync', 
+				
+				// deprecated argument
+				false,
+				
+				// relative path to directory containing translation files
+				dirname( plugin_basename( BP_XPROFILE_WP_USER_SYNC_FILE ) ) . '/languages/'
+	
+			);
+			
+		}
+		
 	}
 	
 	
@@ -489,6 +535,7 @@ class BpXProfileWordPressUserSync {
 		);
 		
 		// BuddyPress 1.7 seems to overlook our 'can_delete' setting
+		// Fixed in BuddyPress 1.9, but leave the check below for older versions
 		$field = new BP_XProfile_Field( $field_id );
 		
 		// let's see if our new field is correctly set
