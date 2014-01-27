@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------
 Plugin Name: BP XProfile WordPress User Sync
 Description: Map BuddyPress XProfile fields to WordPress User fields. <strong>Note:</strong> because there is no way to hide XProfile fields, all data associated with this plugin will be lost when it is deactivated.
-Version: 0.4
+Version: 0.4.1
 Author: Christian Wach
 Author URI: http://haystack.co.uk
 Plugin URI: http://haystack.co.uk
@@ -13,7 +13,7 @@ Plugin URI: http://haystack.co.uk
 
 
 // set our version here
-define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.4' );
+define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.4.1' );
 
 // store reference to this file
 if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_FILE' ) ) {
@@ -256,20 +256,59 @@ class BpXProfileWordPressUserSync {
 		if ( bp_is_user_profile() ) {
 		
 			// exclude our xprofile fields
-			$args[ 'exclude_fields' ] = implode( ',', $this->options );
-		
+			$args['exclude_fields'] = implode( ',', $this->options );
+			
 		}
 		
-		// if on profile edit screen or registration page
-		if ( bp_is_user_profile_edit() OR bp_is_register_page() ) {
+		// if on profile edit screen
+		if ( bp_is_user_profile_edit() ) {
 		
-			// profile edit or registration screen
+			// check which profile group is being queried
+			if ( 
+				
+				isset( $profile_template->groups ) AND
+				is_array( $profile_template->groups ) AND
+				count( $profile_template->groups ) > 0
+				
+			) {
+			
+				// don't want to pop, so loop through them
+				foreach( $profile_template->groups AS $group ) {
+				
+					// is this the base group?
+					if ( $group->id == 1 ) {
+					
+						// query only group 1
+						$args['profile_group_id'] = 1;
+
+						// get field id from name
+						$fullname_field_id = xprofile_get_field_id_from_name( bp_xprofile_fullname_field_name() );
 		
+						// exclude name field
+						$args['exclude_fields'] = $fullname_field_id;
+		
+					}
+					
+					// only the first
+					break;
+				
+				}
+			
+			}
+			
+		}
+		
+		// if on registration page
+		if ( bp_is_register_page() ) {
+		
+			// query only group 1
+			$args['profile_group_id'] = 1;
+
 			// get field id from name
 			$fullname_field_id = xprofile_get_field_id_from_name( bp_xprofile_fullname_field_name() );
 		
 			// exclude name field
-			$args[ 'exclude_fields' ] = $fullname_field_id;
+			$args['exclude_fields'] = $fullname_field_id;
 		
 		}
 		
