@@ -3,7 +3,7 @@
 --------------------------------------------------------------------------------
 Plugin Name: BP XProfile WordPress User Sync
 Description: Map BuddyPress XProfile fields to WordPress User fields. <strong>Note:</strong> because there is no way to hide XProfile fields, all data associated with this plugin will be lost when it is deactivated.
-Version: 0.4.4
+Version: 0.4.5
 Author: Christian Wach
 Author URI: http://haystack.co.uk
 Plugin URI: http://haystack.co.uk
@@ -13,7 +13,7 @@ Plugin URI: http://haystack.co.uk
 
 
 // set our version here
-define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.4.4' );
+define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.4.5' );
 
 // store reference to this file
 if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_FILE' ) ) {
@@ -49,7 +49,8 @@ class BpXProfileWordPressUserSync {
 	
 	
 	/** 
-	 * @description: initialises this object
+	 * Initialises this object
+	 * 
 	 * @return object
 	 */
 	function __construct() {
@@ -70,31 +71,10 @@ class BpXProfileWordPressUserSync {
 	
 	
 	
-	/**
-	 * @description: PHP 4 constructor
-	 * @return object
-	 */
-	function BpXProfileWordPressUserSync() {
-		
-		// is this php5?
-		if ( version_compare( PHP_VERSION, "5.0.0", "<" ) ) {
-		
-			// call php5 constructor
-			$this->__construct();
-			
-		}
-		
-		// --<
-		return $this;
-
-	}
-	
-	
-	
 	/** 
-	 * @description: loads translation, if present
-	 * @todo: 
-	 *
+	 * Loads translation, if present
+	 * 
+	 * @return void
 	 */
 	function translation() {
 		
@@ -126,8 +106,9 @@ class BpXProfileWordPressUserSync {
 	
 	
 	/**
-	 * @description: insert xprofile fields for first and last name
-	 * @return array
+	 * Insert xProfile fields for First Name and Last Name
+	 * 
+	 * @return void
 	 */
 	public function activate() {
 	
@@ -185,8 +166,9 @@ class BpXProfileWordPressUserSync {
 	
 	
 	/**
-	 * @description: actions to perform on plugin deactivation (NOT deletion)
-	 * @return nothing
+	 * Actions to perform on plugin deactivation (NOT deletion)
+	 * 
+	 * @return void
 	 */
 	public function deactivate() {
 		
@@ -216,8 +198,9 @@ class BpXProfileWordPressUserSync {
 	
 		
 	/**
-	 * @description: actions to perform on plugin init
-	 * @return nothing
+	 * Actions to perform on plugin init
+	 * 
+	 * @return void
 	 */
 	public function register_hooks() {
 	
@@ -242,7 +225,8 @@ class BpXProfileWordPressUserSync {
 	
 		
 	/**
-	 * @description: intercept xprofile query process and manage display of fields
+	 * Intercept xprofile query process and manage display of fields
+	 * 
 	 * @param boolean $has_groups
 	 * @param object $profile_template
 	 * @return boolean $has_groups
@@ -298,8 +282,18 @@ class BpXProfileWordPressUserSync {
 			
 		}
 		
-		// if on registration page
-		if ( bp_is_register_page() ) {
+		// determine if we are currently in the profile display loop
+		$in_loop = false;
+		if ( isset( $profile_template->in_the_loop ) AND $profile_template->in_the_loop === true ) {
+			$in_loop = true;
+		}
+
+		/**
+		 * Apply to registration form whichever page it is displayed on, whilst avoiding 
+		 * splitting the Name field into First Name and Last Name fields in the profile 
+		 * display loop of the user. Props https://github.com/sbrajesh
+		 */
+		if ( ! is_user_logged_in() AND ( ! bp_is_user_profile() OR bp_is_user_profile() AND ! $in_loop ) ) {
 		
 			// query only group 1
 			$args['profile_group_id'] = 1;
@@ -340,7 +334,7 @@ class BpXProfileWordPressUserSync {
 						if ( isset( $group->fields ) AND is_array( $group->fields ) ) {
 							
 							// get user ID
-							$user_id = intval( $_GET['user_id'] );
+							$user_id = isset( $_GET['user_id'] ) ? intval( $_GET['user_id'] ) : 0 ;
 							
 							// only edit other users profiles
 							if ( $user_id AND get_current_user_id() != $user_id ) {
@@ -394,14 +388,16 @@ class BpXProfileWordPressUserSync {
 	
 	
 	/**
-	 * @description: intercept WP user registration and update process and populate our fields.
+	 * Intercept WP user registration and update process and populate our fields.
+	 * 
 	 * However, BuddyPress updates the "Name" field before wp_insert_user or wp_update_user get
 	 * called - it hooks into 'user_profile_update_errors' instead. So, there are two options:
 	 * either hook into the same action or call the same function below. Until I raise this as
 	 * an issue (ie, why do database operations via an action designed to collate errors) I'll
 	 * temporarily call the same function.
+	 * 
 	 * @param integer $user_id
-	 * @return nothing
+	 * @return void
 	 */
 	public function intercept_wp_user_update( $user_id ) {
 
@@ -486,11 +482,12 @@ class BpXProfileWordPressUserSync {
 
 
 	/**
-	 * @description: intercept BP core's attempt to sync to WP user profile
+	 * Intercept BP core's attempt to sync to WP user profile
+	 * 
 	 * @param integer $user_id
 	 * @param array $posted_field_ids
 	 * @param boolean $errors
-	 * @return nothing
+	 * @return void
 	 */
 	public function intercept_wp_profile_sync( $user_id = 0, $posted_field_ids, $errors ) {
 		
@@ -532,7 +529,8 @@ class BpXProfileWordPressUserSync {
 
 
 	/**
-	 * @description: compatibility with "WP FB AutoConnect Premium"
+	 * Compatibility with "WP FB AutoConnect Premium"
+	 * 
 	 * @param array $facebook_user
 	 * @return array $facebook_user
 	 */
@@ -575,9 +573,10 @@ class BpXProfileWordPressUserSync {
 	
 	
 	/**
-	 * @description: create a field with a given name
+	 * Create a field with a given name
+	 * 
 	 * @param string $field_name
-	 * @return integer $field_id on success, false on failure
+	 * @return integer $field_id True on success, false on failure
 	 */
 	private function _create_field( $field_name ) {
 	
@@ -691,7 +690,7 @@ register_activation_hook( __FILE__, array( $bp_xprofile_wordpress_user_sync, 'ac
 // deactivation
 register_deactivation_hook( __FILE__, array( $bp_xprofile_wordpress_user_sync, 'deactivate' ) );
 
-// uninstall will use the 'uninstall.php' method when XProfile fields can be "deactivated"
+// uninstall will use the 'uninstall.php' method when xProfile fields can be "deactivated"
 // see: http://codex.wordpress.org/Function_Reference/register_uninstall_hook
 
 
