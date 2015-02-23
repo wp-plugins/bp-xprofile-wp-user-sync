@@ -4,7 +4,7 @@ Donate link: https://www.paypal.com/cgi-bin/webscr?cmd=_s-xclick&hosted_button_i
 Tags: buddypress, xprofile, profile, sync
 Requires at least: 3.5
 Tested up to: 4.0
-Stable tag: 0.5
+Stable tag: 0.5.2
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
@@ -24,7 +24,7 @@ The plugin replaces the default BuddyPress XProfile Name field with two fields c
 
 == Installation ==
 
-1. Extract the plugin archive 
+1. Extract the plugin archive
 1. Upload plugin files to your `/wp-content/plugins/` directory
 1. Activate the plugin through the 'Plugins' menu in WordPress
 
@@ -32,10 +32,18 @@ The plugin replaces the default BuddyPress XProfile Name field with two fields c
 
 == Changelog ==
 
+= 0.5.2 =
+
+* Pre-filter profile query when BP is sufficiently recent
+
+= 0.5.1 =
+
+* Fix translation (props flegmatiq)
+
 = 0.5 =
 
-Reconnect field data to field definitions when plugin is reactivated
-Hides default name field from Profile Edit admin screen
+* Reconnect field data to field definitions when plugin is reactivated
+* Hides default name field from Profile Edit admin screen in BP 2.1+
 
 = 0.4.5 =
 
