@@ -5,7 +5,7 @@ Plugin Name: BP XProfile WordPress User Sync
 Plugin URI: https://github.com/christianwach/bp-xprofile-wp-user-sync
 Description: Map BuddyPress xProfile fields to WordPress User fields. <strong>Note:</strong> because there is no way to hide xProfile fields, all field definitions are deleted when it is deactivated. The plugin tries to reconnect on reactivation, but always backup before deactivating.
 Author: Christian Wach
-Version: 0.5.2
+Version: 0.5.3
 Author URI: http://haystack.co.uk
 Text Domain: bp-xprofile-wp-user-sync
 Domain Path: /languages
@@ -15,7 +15,7 @@ Domain Path: /languages
 
 
 // set our version here
-define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.5.2' );
+define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.5.3' );
 
 // store reference to this file
 if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_FILE' ) ) {
@@ -336,7 +336,10 @@ class BpXProfileWordPressUserSync {
 		if ( bp_is_user_profile() AND ! bp_is_user_profile_edit() ) {
 
 			// get fields to exclude on profile view screen
-			$args['exclude_fields'] = $this->_get_excluded_fields();
+			$exclude_fields = $this->_get_excluded_fields();
+
+			// merge with existing if populated
+			$args['exclude_fields'] = $this->_merge_excluded_fields( $args['exclude_fields'], $exclude_fields );
 
 		}
 
@@ -344,7 +347,10 @@ class BpXProfileWordPressUserSync {
 		if ( bp_is_user_profile_edit() ) {
 
 			// exclude name field (bp_xprofile_fullname_field_id is available since BP 2.0)
-			$args['exclude_fields'] = bp_xprofile_fullname_field_id();
+			$exclude_fields = bp_xprofile_fullname_field_id();
+
+			// merge with existing if populated
+			$args['exclude_fields'] = $this->_merge_excluded_fields( $args['exclude_fields'], $exclude_fields );
 
 		}
 
@@ -364,7 +370,10 @@ class BpXProfileWordPressUserSync {
 			$args['profile_group_id'] = 1;
 
 			// exclude name field (bp_xprofile_fullname_field_id is available since BP 2.0)
-			$args['exclude_fields'] = bp_xprofile_fullname_field_id();
+			$exclude_fields = bp_xprofile_fullname_field_id();
+
+			// merge with existing if populated
+			$args['exclude_fields'] = $this->_merge_excluded_fields( $args['exclude_fields'], $exclude_fields );
 
 		}
 
@@ -920,9 +929,7 @@ class BpXProfileWordPressUserSync {
 	/**
 	 * Get excluded fields on Profile View
 	 *
-	 * @param int $old_field_id The previous ID of the field
-	 * @param int $new_field_id The new ID of the field
-	 * @return bool True if update successful
+	 * @return string $exclude_fields Comma-separated list of field IDs
 	 */
 	private function _get_excluded_fields() {
 
@@ -950,6 +957,33 @@ class BpXProfileWordPressUserSync {
 			$exclude_fields,
 			$this->options
 		);
+
+	}
+
+
+
+	/**
+	 * Merge excluded fields on Profile View
+	 *
+	 * @param string $excluded_fields Comma-delimited list of fields already excluded
+	 * @param string $exclude_fields Comma-delimited list of fields requiring exclusion
+	 * @return string $excluded_fields Comma-delimited list of all fields to be excluded
+	 */
+	private function _merge_excluded_fields( $excluded_fields, $exclude_fields ) {
+
+		// if params are not arrays already, convert them
+		if ( ! is_array( $excluded_fields ) ) $excluded_fields = explode( ',', $excluded_fields );
+		if ( ! is_array( $exclude_fields ) ) $exclude_fields = explode( ',', $exclude_fields );
+
+		// merge with existing if populated
+		if ( ! empty( $excluded_fields ) ) {
+			$excluded_fields = array_unique( array_merge( $excluded_fields, $exclude_fields ) );
+		} else {
+			$excluded_fields = $exclude_fields;
+		}
+
+		// --<
+		return implode( ',', $excluded_fields );
 
 	}
 
