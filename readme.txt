@@ -32,7 +32,7 @@ The plugin replaces the default BuddyPress XProfile Name field with two fields c
 
 == Changelog ==
 
-= 0.6 =
+= 0.6.1 =
 
 * Damage limitation
 
