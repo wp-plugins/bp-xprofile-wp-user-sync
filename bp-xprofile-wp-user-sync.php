@@ -5,7 +5,7 @@ Plugin Name: BP XProfile WordPress User Sync
 Plugin URI: https://github.com/christianwach/bp-xprofile-wp-user-sync
 Description: Map BuddyPress xProfile fields to WordPress User fields. <strong>Note:</strong> because there is no way to hide xProfile fields, all field definitions are deleted when it is deactivated. The plugin tries to reconnect on reactivation, but always backup before deactivating. <strong>The best way to update this plugin is to replace the folder with the latest version via FTP or similar. This avoids the deactivate-reactivate process.</strong>
 Author: Christian Wach
-Version: 0.6.2
+Version: 0.6.3
 Author URI: http://haystack.co.uk
 Text Domain: bp-xprofile-wp-user-sync
 Domain Path: /languages
@@ -15,19 +15,19 @@ Domain Path: /languages
 
 
 // set our version here
-define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.6.2' );
+define( 'BP_XPROFILE_WP_USER_SYNC_VERSION', '0.6.3' );
 
 // store reference to this file
-if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_FILE' ) ) {
+if ( ! defined( 'BP_XPROFILE_WP_USER_SYNC_FILE' ) ) {
 	define( 'BP_XPROFILE_WP_USER_SYNC_FILE', __FILE__ );
 }
 
 // store URL to this plugin's directory
-if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_URL' ) ) {
+if ( ! defined( 'BP_XPROFILE_WP_USER_SYNC_URL' ) ) {
 	define( 'BP_XPROFILE_WP_USER_SYNC_URL', plugin_dir_url( BP_XPROFILE_WP_USER_SYNC_FILE ) );
 }
 // store PATH to this plugin's directory
-if ( !defined( 'BP_XPROFILE_WP_USER_SYNC_PATH' ) ) {
+if ( ! defined( 'BP_XPROFILE_WP_USER_SYNC_PATH' ) ) {
 	define( 'BP_XPROFILE_WP_USER_SYNC_PATH', plugin_dir_path( BP_XPROFILE_WP_USER_SYNC_FILE ) );
 }
 
@@ -132,14 +132,14 @@ class BpXProfileWordPressUserSync {
 			} else {
 
 				// first name field
-				$existing_first_name_field_id = $existing_fields[ 'first_name_field_id' ];
-				$existing_first_name_field_name = $existing_fields[ 'first_name_field_name' ];
-				$existing_first_name_field_desc = $existing_fields[ 'first_name_field_desc' ];
+				$existing_first_name_field_id = $existing_fields['first_name_field_id'];
+				$existing_first_name_field_name = $existing_fields['first_name_field_name'];
+				$existing_first_name_field_desc = $existing_fields['first_name_field_desc'];
 
 				// first name field
-				$existing_last_name_field_id = $existing_fields[ 'last_name_field_id' ];
-				$existing_last_name_field_name = $existing_fields[ 'last_name_field_name' ];
-				$existing_last_name_field_desc = $existing_fields[ 'last_name_field_desc' ];
+				$existing_last_name_field_id = $existing_fields['last_name_field_id'];
+				$existing_last_name_field_name = $existing_fields['last_name_field_name'];
+				$existing_last_name_field_desc = $existing_fields['last_name_field_desc'];
 
 			}
 
@@ -196,8 +196,8 @@ class BpXProfileWordPressUserSync {
 			delete_option( 'bp_xp_wp_sync_options_store' );
 
 			// add to options
-			$this->options[ 'first_name_field_id' ] = $existing_first_name_field_id;
-			$this->options[ 'last_name_field_id' ] = $existing_last_name_field_id;
+			$this->options['first_name_field_id'] = $existing_first_name_field_id;
+			$this->options['last_name_field_id'] = $existing_last_name_field_id;
 
 			// update options array
 			update_option( 'bp_xp_wp_sync_options', $this->options );
@@ -205,8 +205,8 @@ class BpXProfileWordPressUserSync {
 		} else {
 
 			// add to options
-			$this->options[ 'first_name_field_id' ] = $first_name_field_id;
-			$this->options[ 'last_name_field_id' ] = $last_name_field_id;
+			$this->options['first_name_field_id'] = $first_name_field_id;
+			$this->options['last_name_field_id'] = $last_name_field_id;
 
 			// save options array
 			add_option( 'bp_xp_wp_sync_options', $this->options );
@@ -251,7 +251,7 @@ class BpXProfileWordPressUserSync {
 		$options = array();
 
 		// get first_name xProfile field
-		$field = new BP_XProfile_Field( $this->options[ 'first_name_field_id' ] );
+		$field = new BP_XProfile_Field( $this->options['first_name_field_id'] );
 
 		// store data about first name field
 		$options['first_name_field_id'] = $field->id;
@@ -263,7 +263,7 @@ class BpXProfileWordPressUserSync {
 		$field->delete();
 
 		// get last_name xProfile field
-		$field = new BP_XProfile_Field( $this->options[ 'last_name_field_id' ] );
+		$field = new BP_XProfile_Field( $this->options['last_name_field_id'] );
 
 		// store data about first name field
 		$options['last_name_field_id'] = $field->id;
@@ -397,7 +397,7 @@ class BpXProfileWordPressUserSync {
 		$args = array();
 
 		// if on profile view screen
-		if ( bp_is_user_profile() AND !bp_is_user_profile_edit() ) {
+		if ( bp_is_user_profile() AND ! bp_is_user_profile_edit() ) {
 
 			// get fields to exclude on profile view screen
 			$args['exclude_fields'] = $this->_get_excluded_fields();
@@ -590,7 +590,7 @@ class BpXProfileWordPressUserSync {
 	public function intercept_wp_user_update( $user_id ) {
 
 		// only map data when the site admin is adding users, not on registration.
-		if ( !is_admin() ) { return false; }
+		if ( ! is_admin() ) { return false; }
 
 		// populate the user's first and last names
 		if ( bp_is_active( 'xprofile' ) ) {
@@ -619,19 +619,47 @@ class BpXProfileWordPressUserSync {
 
 			}
 
-			// update first_name field
-			xprofile_set_field_data(
-				$this->options[ 'first_name_field_id' ],
-				$user_id,
-				$first_name
-			);
+			/**
+			 * In multisite when not on the main blog, our options are not loaded
+			 * because I mistakenly failed to use a site_option instead of a blog
+			 * option. At the moment, there's little I can do except to switch to
+			 * the BP root blog and grab the values from there. I assume this
+			 * won't be a common occurrence and therefore that this won't cause
+			 * too much of an overhead.
+			 */
 
-			// update last_name field
-			xprofile_set_field_data(
-				$this->options[ 'last_name_field_id' ],
-				$user_id,
-				$last_name
-			);
+			// test for site other than main site
+			if ( is_multisite() AND ! is_main_site() ) {
+
+				// switch to main blog
+				switch_to_blog( bp_get_root_blog_id() );
+
+				// get options array, if it exists
+				$this->options = get_option( 'bp_xp_wp_sync_options', array() );
+
+				// switch back
+				restore_current_blog();
+
+			}
+
+			// test for one of our options
+			if ( isset( $this->options['first_name_field_id'] ) ) {
+
+				// update first_name field
+				xprofile_set_field_data(
+					$this->options['first_name_field_id'],
+					$user_id,
+					$first_name
+				);
+
+				// update last_name field
+				xprofile_set_field_data(
+					$this->options['last_name_field_id'],
+					$user_id,
+					$last_name
+				);
+
+			}
 
 			/**
 			 * When xProfiles are updated, BuddyPress sets user nickname and display name
@@ -639,7 +667,7 @@ class BpXProfileWordPressUserSync {
 			 */
 
 			// construct full name
-			$full_name = $first_name.' '.$last_name;
+			$full_name = $first_name . ' ' . $last_name;
 
 			// set user nickname
 			bp_update_user_meta( $user_id, 'nickname', $full_name );
@@ -684,7 +712,7 @@ class BpXProfileWordPressUserSync {
 		// we're hooked in before BP core
 		$bp = buddypress();
 
-		if ( !empty( $bp->site_options['bp-disable-profile-sync'] ) && (int) $bp->site_options['bp-disable-profile-sync'] )
+		if ( ! empty( $bp->site_options['bp-disable-profile-sync'] ) && (int) $bp->site_options['bp-disable-profile-sync'] )
 			return true;
 
 		if ( empty( $user_id ) )
@@ -695,18 +723,18 @@ class BpXProfileWordPressUserSync {
 
 		// get our user's first name
 		$first_name = xprofile_get_field_data(
-			$this->options[ 'first_name_field_id' ],
+			$this->options['first_name_field_id'],
 			$user_id
 		);
 
 		// get our user's last name
 		$last_name = xprofile_get_field_data(
-			$this->options[ 'last_name_field_id' ],
+			$this->options['last_name_field_id'],
 			$user_id
 		);
 
 		// concatenate as per BP core
-		$name = $first_name.' '.$last_name;
+		$name = $first_name . ' ' . $last_name;
 		//print_r( array( 'name' => $name ) ); die();
 
 		/**
@@ -803,7 +831,7 @@ class BpXProfileWordPressUserSync {
 		$field_id = xprofile_insert_field( $data );
 
 		// die if unsuccessful
-		if ( !is_numeric( $field_id ) ) {
+		if ( ! is_numeric( $field_id ) ) {
 
 			// construct message
 			$msg = __(
